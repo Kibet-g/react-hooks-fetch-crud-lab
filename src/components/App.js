@@ -5,19 +5,29 @@ import QuestionList from "./QuestionList";
 
 function App() {
   const [questions, setQuestions] = useState([]);
-  const [page, setPage] = useState('List')
-  useEffect(() =>{
-    fetch('http://localhost:4000/questions')
-      .then((res) => res.json())
-      .then((data) => setQuestions(data))
-  },[])
-  function addQuestion(newQuestion){
-    setQuestions([...questions, newQuestion])
+  const [page, setPage] = useState("List");
+
+  // Fetch questions initially
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+
+  const fetchQuestions = async () => {
+    const res = await fetch("http://localhost:4000/questions");
+    const data = await res.json();
+    setQuestions(data);
+  };
+
+  function addQuestion(newQuestion) {
+    setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
+    setPage("List"); // Switch to list view to show new question
   }
-  function deleteQuestion(id){
+
+  function deleteQuestion(id) {
     setQuestions(questions.filter((question) => question.id !== id));
   }
-  function updateQuestion(updatedQuestion){
+
+  function updateQuestion(updatedQuestion) {
     setQuestions(
       questions.map((q) => (q.id === updatedQuestion.id ? updatedQuestion : q))
     );
@@ -27,9 +37,13 @@ function App() {
     <main>
       <AdminNavBar onChangePage={setPage} />
       {page === "Form" ? (
-        <QuestionForm onAddQuestion={addQuestion}/> 
-        ): (
-        <QuestionList questions={questions} onDeleteQuestion={deleteQuestion} onUpdateQuestion={updateQuestion}  />
+        <QuestionForm onAddQuestion={addQuestion} />
+      ) : (
+        <QuestionList
+          questions={questions}
+          onDeleteQuestion={deleteQuestion}
+          onUpdateQuestion={updateQuestion}
+        />
       )}
     </main>
   );

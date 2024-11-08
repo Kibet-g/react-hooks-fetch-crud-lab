@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
-function QuestionForm({onAddQuestion}) {
+function QuestionForm({ onAddQuestion }) {
   const [formData, setFormData] = useState({
     prompt: "",
     answer1: "",
@@ -9,13 +9,14 @@ function QuestionForm({onAddQuestion}) {
     answer4: "",
     correctIndex: 0,
   });
-  let isMounted = true
+
+  const isMounted = useRef(true);
 
   useEffect(() => {
     return () => {
-      isMounted = false;
-    }
-  },[])
+      isMounted.current = false;
+    };
+  }, []);
 
   function handleChange(event) {
     setFormData({
@@ -24,37 +25,38 @@ function QuestionForm({onAddQuestion}) {
     });
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const newQuestion = {
-      prompt:formData.prompt,
-      answers: [formData.answer1,formData.answer2,formData.answer3,formData.answer4],
-      correctIndex:formData.correctIndex
-    }
-    addQuestion(newQuestion)
-  }
-  function addQuestion(question){
-    fetch("http://localhost:4000/questions",{
+      prompt: formData.prompt,
+      answers: [
+        formData.answer1,
+        formData.answer2,
+        formData.answer3,
+        formData.answer4,
+      ],
+      correctIndex: parseInt(formData.correctIndex, 10),
+    };
+
+    const res = await fetch("http://localhost:4000/questions", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body:JSON.stringify(question), 
-    })
-      .then((res) => res.json())
-      .then((data) =>{
-        if(isMounted){
-          setFormData({
-            prompt: "",
-            answer1: "",
-            answer2: "",
-            answer3: "",
-            answer4: "",
-            correctIndex: 0
-          });
-          onAddQuestion(data)
-        }  
-      })
-      .catch((error)=> console.error("Error Adding Question:",error)) 
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newQuestion),
+    });
+    const data = await res.json();
+
+    if (isMounted.current) {
+      onAddQuestion(data); // Add question to state
+      setFormData({
+        prompt: "",
+        answer1: "",
+        answer2: "",
+        answer3: "",
+        answer4: "",
+        correctIndex: 0,
+      });
     }
+  }
 
   return (
     <section>

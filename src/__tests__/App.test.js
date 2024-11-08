@@ -43,12 +43,21 @@ test("creates a new question when the form is submitted", async () => {
   fireEvent.change(screen.queryByLabelText(/Answer 2/), {
     target: { value: "Test Answer 2" },
   });
+  fireEvent.change(screen.queryByLabelText(/Answer 3/), {
+    target: { value: "Test Answer 3" },
+  });
+  fireEvent.change(screen.queryByLabelText(/Answer 4/), {
+    target: { value: "Test Answer 4" },
+  });
   fireEvent.change(screen.queryByLabelText(/Correct Answer/), {
     target: { value: "1" },
   });
 
   // submit form
   fireEvent.submit(screen.queryByText(/Add Question/));
+
+  // wait for the new question to be added to the list
+  await screen.findByText(/Test Prompt/);
 
   // view questions
   fireEvent.click(screen.queryByText(/View Questions/));
